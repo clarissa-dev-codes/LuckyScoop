@@ -1,0 +1,23 @@
+[
+    {
+        "thing": "Mousepad",
+        "price": 10.4,
+        "luckyNum": 9,
+        "color": "Purple",
+        "quantity": 0
+    },
+    {
+        "thing": "Pen",
+        "price": 10.0,
+        "luckyNum": 3,
+        "color": "White",
+        "quantity": 50
+    },
+    {
+        "thing": "Pencil",
+        "price": 2.0,
+        "luckyNum": 2,
+        "color": "Red",
+        "quantity": 20
+    }
+]
