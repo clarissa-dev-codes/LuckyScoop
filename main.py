@@ -4,6 +4,7 @@ import random
 
 # Import your struct and functions from your separate inventory.py file
 from Inventory import Item, load_inventory, save_inventory
+from LuckyScoop import lucky_scoop
 
 
 class LuckyScoops:
@@ -12,7 +13,7 @@ class LuckyScoops:
         self.root.title("Lucky Scoops")
         self.root.geometry("1000x850")  # Slightly taller window to fit the input form
 
-        # Pull the inventory list from your separate backend file
+
         self.inventory = load_inventory()
 
         # Color Theme Style
@@ -22,10 +23,12 @@ class LuckyScoops:
         # Create structural layout frames for the screens
         self.main_screen = tk.Frame(self.root, bg=self.bg_color)
         self.inventory_screen = tk.Frame(self.root, bg=self.bg_color)
+        self.scoop_screen = tk.Frame(self.root, bg=self.bg_color)
 
-        # Build both screen structures
+        # Build screen structures
         self.build_main_screen()
         self.build_inventory_screen()
+        self.build_scoop_screen()
 
         # Show the main home screen first
         self.show_screen(self.main_screen)
@@ -34,6 +37,7 @@ class LuckyScoops:
         """Hides all screens and packs the selected one."""
         self.main_screen.pack_forget()
         self.inventory_screen.pack_forget()
+        self.scoop_screen.pack_forget()
         screen_frame.pack(fill="both", expand=True)
 
     def build_main_screen(self):
@@ -45,7 +49,7 @@ class LuckyScoops:
             nav_frame,
             text="📋 Open Inventory",
             font=("Arial", 14),
-            command=lambda: self.show_screen(self.inventory_screen),
+            command=lambda: [self.refresh_table(), self.show_screen(self.inventory_screen)],
             padx=10, pady=5
         )
         btn_go_to_inv.pack(side="right")
@@ -54,7 +58,7 @@ class LuckyScoops:
         self.game_label.pack(pady=60)
 
         def action_scoop():
-            self.game_label.config(text="You clicked Lucky Scoop")
+            self.show_screen(self.scoop_screen)
 
         def action_roll():
             self.game_label.config(text="You clicked Lucky Roll")
@@ -71,6 +75,68 @@ class LuckyScoops:
         btn_getMore = tk.Button(self.main_screen, text="Get One More", font=("Arial", 16), width=20,
                                 command=action_OneMore)
         btn_getMore.pack(pady=15)
+
+    def build_scoop_screen(self):
+        header_frame = tk.Frame(self.scoop_screen, bg=self.bg_color)
+        header_frame.pack(fill="x", padx=20, pady=20)
+
+        btn_back = tk.Button(header_frame, text="← Back to Menu", font=("Arial", 12),
+                             command=lambda: self.show_screen(self.main_screen))
+        btn_back.pack(side="left")
+
+        title = tk.Label(header_frame, text="Lucky Scoop", font=("Arial", 24, "bold"), bg=self.bg_color)
+        title.pack(side="left", padx=30)
+
+        self.scoop_status_label = tk.Label(self.scoop_screen, text="Get a scoop", font=("Arial", 16, "italic"), bg=self.bg_color)
+        self.scoop_status_label.pack(pady=15)
+
+        input_frame = tk.Frame(self.scoop_screen, bg=self.bg_color)
+        input_frame.pack(pady=10)
+
+        tk.Label(input_frame, text="How many scoops?", font=("Arial", 12, "bold"), bg=self.bg_color).pack(sise="left", padx=5)
+
+        self.entry_scoop_count = tk.Entry(input_frame, font=("Arial", 14), width=6, justify="center")
+        self.entry_scoop_count.pack(side="left", padx=5)
+        self.entry_scoop_count.insert(0, "1")
+
+        self.entry_scoop_count.bind('<Return>', lambda event: self.trigger_scoop_game())
+
+        list_frame = tk.Frame(self.scoop_screen)
+        list_frame.pack(padx=100, pady=10, fill="both", expand=True)
+
+        scrollbar = tk.Scrollbar(list_frame)
+        scrollbar.pack(side="right", fill="y")
+
+        cols = ("Item Name", "Quantity Won")
+        self.result_tree = ttk.Treeview(list_frame, columns=cols, show="headings", yscrollcommand=scrollbar.set, height=12)
+        self.result_tree.pack(side="left", fill="both", expand=True)
+        scrollbar.config(command=self.result_tree.yview)
+
+        for col in cols:
+            self.result_tree.heading(col, text=col)
+            self.result_tree.column(col, width=200, anchor="center")
+
+        btn_frame = tk.Frame(self.scoop_screen, bg=self.bg_color)
+        btn_frame.pack(pady=30)
+
+        btn_trigger_scoop = tk.Button(btn_frame, text="Roll 1 Scoop", font=("Arial", 14, "bold"), width=18, command=self.trigger_scoop_game)
+        btn_trigger_scoop.pack(side="left", padx=15)
+
+    def trigger_scoop_game(self):
+        for row in self.result_tree.get_children():
+            self.result_tree.delete(row)
+
+        results = lucky_scoop(num_scoops=1)
+
+        if results == "Empty Database":
+            self.scoop_status_label.config(text="Out of Stock! Return to menu and add items to your inventory database.")
+            return
+
+        self.scoop_status_label.config(text="Scoop Complete! Here is what you grabbed: ")
+
+        for item_name, qty_won in results.items():
+            self.result_tree.insert("", "end", values=(item_name, qty_won))
+
 
     def build_inventory_screen(self):
         """Builds the inventory database list layout screen."""
@@ -145,8 +211,11 @@ class LuckyScoops:
     # ==========================================
     def refresh_table(self):
         """Updates the interactive spreadsheet component display grid."""
+        self.inventory = load_inventory()
+
         for row in self.tree.get_children():
             self.tree.delete(row)
+
         for index, item in enumerate(self.inventory):
             self.tree.insert("", "end", iid=index,
                              values=(item.thing, f"${item.price:.2f}", item.luckyNum, item.color, item.quantity))
@@ -288,7 +357,7 @@ class LuckyScoops:
             else:
                 messagebox.showerror("Out of Stock", "Cannot sell item. Quantity is already 0.")
 
-    def reset_stock(self):
+    def delete_stock(self):
         idx = self.get_selected_item_index()
         if idx is not None:
             confirm = messagebox.askyesno("Confirm Reset",
