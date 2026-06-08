@@ -5,6 +5,7 @@ import random
 # Import your struct and functions from your separate inventory.py file
 from Inventory import Item, load_inventory, save_inventory
 from LuckyScoop import lucky_scoop
+from LuckyRoll import luckyRoll
 
 
 class LuckyScoops:
@@ -24,11 +25,13 @@ class LuckyScoops:
         self.main_screen = tk.Frame(self.root, bg=self.bg_color)
         self.inventory_screen = tk.Frame(self.root, bg=self.bg_color)
         self.scoop_screen = tk.Frame(self.root, bg=self.bg_color)
+        self.roll_screen = tk.Frame(self.root, bg=self.bg_color)
 
         # Build screen structures
         self.build_main_screen()
         self.build_inventory_screen()
         self.build_scoop_screen()
+        self.build_roll_screen()
 
         # Show the main home screen first
         self.show_screen(self.main_screen)
@@ -38,6 +41,7 @@ class LuckyScoops:
         self.main_screen.pack_forget()
         self.inventory_screen.pack_forget()
         self.scoop_screen.pack_forget()
+        self.roll_screen.pack_forget()
         screen_frame.pack(fill="both", expand=True)
 
     def build_main_screen(self):
@@ -61,7 +65,7 @@ class LuckyScoops:
             self.show_screen(self.scoop_screen)
 
         def action_roll():
-            self.game_label.config(text="You clicked Lucky Roll")
+            self.show_screen(self.roll_screen)
 
         def action_OneMore():
             self.game_label.config(text="You clicked Get One More")
@@ -75,6 +79,95 @@ class LuckyScoops:
         btn_getMore = tk.Button(self.main_screen, text="Get One More", font=("Arial", 16), width=20,
                                 command=action_OneMore)
         btn_getMore.pack(pady=15)
+
+    def build_roll_screen(self):
+        header_frame = tk.Frame(self.roll_screen, bg=self.bg_color)
+        header_frame.pack(fill="x", padx=20, pady=20)
+
+        btn_back = tk.Button(header_frame, text="← Back to Menu", font=("Arial", 12),
+                             command=lambda: self.show_screen(self.main_screen))
+        btn_back.pack(side="left")
+
+        title = tk.Label(header_frame, text="Lucky Roll", font=("Arial", 24, "bold"), bg=self.bg_color)
+        title.pack(side="left", padx=30)
+
+        number_container = tk.Frame(self.roll_screen, bg=self.bg_color)
+        number_container.pack(pady=15)
+
+        tk.Label(number_container, text="Winning Numbers: ", font=("Arial", 14, "bold"), bg=self.bg_color).pack(side="left", padx=5)
+
+        self.num_lbl1 = tk.Label(number_container, text="X", font=("Arial", 20, "bold"), bg="#FFF", width=4,
+                                 relief="sunken")
+        self.num_lbl1.pack(side="left", padx=5)
+        self.num_lbl2 = tk.Label(number_container, text="X", font=("Arial", 20, "bold"), bg="#FFF", width=4,
+                                 relief="sunken")
+        self.num_lbl2.pack(side="left", padx=5)
+        self.num_lbl3 = tk.Label(number_container, text="X", font=("Arial", 20, "bold"), bg="#FFF", width=4,
+                                 relief="sunken")
+        self.num_lbl3.pack(side="left", padx=5)
+
+        input_frame = tk.Frame(self.roll_screen, bg=self.bg_color)
+        input_frame.pack(pady=10)
+
+        tk.Label(input_frame, text="How many items to roll?", font=("Arial", 12, "bold"), bg=self.bg_color).pack(
+            side="left", padx=5)
+        self.entry_roll_count = tk.Entry(input_frame, font=("Arial", 14), width=6, justify="center")
+        self.entry_roll_count.pack(side="left", padx=5)
+        self.entry_roll_count.insert(0, "1")
+        self.entry_roll_count.bind('<Return>', lambda event: self.trigger_roll_game())
+
+        list_frame = tk.Frame(self.roll_screen)
+        list_frame.pack(padx=100, pady=10, fill="both", expand=True)
+
+        scrollbar = tk.Scrollbar(list_frame)
+        scrollbar.pack(side="right", fill="y")
+
+        cols = ("Item Name", "Quantity Awarded")
+        self.roll_tree = ttk.Treeview(list_frame, columns=cols, show="headings", yscrollcommand=scrollbar.set, height=12)
+        self.roll_tree.pack(side="left", fill="both", expand=True)
+        scrollbar.config(command=self.roll_tree.yview)
+
+        for col in cols:
+            self.roll_tree.heading(col, text=col)
+            self.roll_tree.column(col, width=200, anchor="center")
+
+        btn_frame = tk.Frame(self.roll_screen,bg=self.bg_color)
+        btn_frame.pack(pady=20)
+
+        btn_trigger_roll = tk.Button(btn_frame, text="Roll Items", font=("Arial", 14, "bold"), width=18, command=self.trigger_roll_game)
+        btn_trigger_roll.pack(side="left", padx=15)
+
+    def trigger_roll_game(self):
+        try:
+            roll_input = self.entry_roll_count.get().strip()
+            if not roll_input:
+                messagebox.showerror("Input Error", "Please specify item roll counts.")
+                return
+            amount = int(roll_input)
+            if amount <= 0:
+                messagebox.showerror("Input Error", "Value counts must scale greater than 0.")
+                return
+
+        except ValueError:
+            messagebox.showerror("Data Type Error", "Please type a valid whole number value.")
+            return
+
+        for row in self.roll_tree.get_children():
+            self.roll_tree.delete(row)
+
+        results, winning_nums = luckyRoll(amount)
+
+        if results == "Empty Database":
+            messagebox.showerror("Database Out of Stock", "No item units are active. Please restock insde inventory tracking dashboards.")
+            return
+
+        self.num_lbl1.config(text=str(winning_nums[0]))
+        self.num_lbl2.config(text=str(winning_nums[1]))
+        self.num_lbl3.config(text=str(winning_nums[2]))
+
+        for item_name, qty in results.items():
+            self.roll_tree.insert("", "end", values=(item_name, qty))
+
 
     def build_scoop_screen(self):
         header_frame = tk.Frame(self.scoop_screen, bg=self.bg_color)
@@ -93,7 +186,7 @@ class LuckyScoops:
         input_frame = tk.Frame(self.scoop_screen, bg=self.bg_color)
         input_frame.pack(pady=10)
 
-        tk.Label(input_frame, text="How many scoops?", font=("Arial", 12, "bold"), bg=self.bg_color).pack(sise="left", padx=5)
+        tk.Label(input_frame, text="How many scoops?", font=("Arial", 12, "bold"), bg=self.bg_color).pack(side="left", padx=5)
 
         self.entry_scoop_count = tk.Entry(input_frame, font=("Arial", 14), width=6, justify="center")
         self.entry_scoop_count.pack(side="left", padx=5)

@@ -4,20 +4,27 @@
         "price": 15.5,
         "luckyNum": 8,
         "color": "Orange",
-        "quantity": 35
+        "quantity": 107
     },
     {
         "thing": "Hearts",
         "price": 5.0,
         "luckyNum": 9,
         "color": "Purple",
-        "quantity": 40
+        "quantity": 113
     },
     {
         "thing": "Pillow",
         "price": 30.0,
         "luckyNum": 0,
         "color": "Orange",
-        "quantity": 28
+        "quantity": 97
+    },
+    {
+        "thing": "Blankets",
+        "price": 50.0,
+        "luckyNum": 0,
+        "color": "White",
+        "quantity": 79
     }
 ]
