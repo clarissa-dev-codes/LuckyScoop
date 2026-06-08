@@ -4,27 +4,55 @@
         "price": 15.5,
         "luckyNum": 8,
         "color": "Orange",
-        "quantity": 107
+        "quantity": 0
     },
     {
         "thing": "Hearts",
         "price": 5.0,
         "luckyNum": 9,
         "color": "Purple",
-        "quantity": 113
+        "quantity": 0
     },
     {
         "thing": "Pillow",
         "price": 30.0,
         "luckyNum": 0,
         "color": "Orange",
-        "quantity": 97
+        "quantity": 0
     },
     {
         "thing": "Blankets",
         "price": 50.0,
         "luckyNum": 0,
         "color": "White",
-        "quantity": 79
+        "quantity": 0
+    },
+    {
+        "thing": "Notepad",
+        "price": 5.0,
+        "luckyNum": 8,
+        "color": "Blue",
+        "quantity": 0
+    },
+    {
+        "thing": "Coloring Book",
+        "price": 15.0,
+        "luckyNum": 3,
+        "color": "Purple",
+        "quantity": 0
+    },
+    {
+        "thing": "Pot",
+        "price": 5.0,
+        "luckyNum": 7,
+        "color": "White",
+        "quantity": 0
+    },
+    {
+        "thing": "Markers",
+        "price": 10.0,
+        "luckyNum": 0,
+        "color": "Blue",
+        "quantity": 0
     }
 ]

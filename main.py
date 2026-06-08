@@ -6,6 +6,7 @@ import random
 from Inventory import Item, load_inventory, save_inventory
 from LuckyScoop import lucky_scoop
 from LuckyRoll import luckyRoll
+from GetOneMore import getOneMore
 
 
 class LuckyScoops:
@@ -26,12 +27,14 @@ class LuckyScoops:
         self.inventory_screen = tk.Frame(self.root, bg=self.bg_color)
         self.scoop_screen = tk.Frame(self.root, bg=self.bg_color)
         self.roll_screen = tk.Frame(self.root, bg=self.bg_color)
+        self.get_one_more_screen = tk.Frame(self.root, bg=self.bg_color)
 
         # Build screen structures
         self.build_main_screen()
         self.build_inventory_screen()
         self.build_scoop_screen()
         self.build_roll_screen()
+        self.build_get_one_more_screen()
 
         # Show the main home screen first
         self.show_screen(self.main_screen)
@@ -42,6 +45,7 @@ class LuckyScoops:
         self.inventory_screen.pack_forget()
         self.scoop_screen.pack_forget()
         self.roll_screen.pack_forget()
+        self.get_one_more_screen.pack_forget()
         screen_frame.pack(fill="both", expand=True)
 
     def build_main_screen(self):
@@ -68,7 +72,7 @@ class LuckyScoops:
             self.show_screen(self.roll_screen)
 
         def action_OneMore():
-            self.game_label.config(text="You clicked Get One More")
+            self.show_screen(self.get_one_more_screen)
 
         btn_scoop = tk.Button(self.main_screen, text="Lucky Scoop", font=("Arial", 16), width=20, command=action_scoop)
         btn_scoop.pack(pady=15)
@@ -79,6 +83,83 @@ class LuckyScoops:
         btn_getMore = tk.Button(self.main_screen, text="Get One More", font=("Arial", 16), width=20,
                                 command=action_OneMore)
         btn_getMore.pack(pady=15)
+
+    def build_get_one_more_screen(self):
+        header_frame = tk.Frame(self.get_one_more_screen, bg=self.bg_color)
+        header_frame.pack(fill="x", padx=20, pady=20)
+
+        btn_back = tk.Button(header_frame, text="← Back to Menu", font=("Arial", 12),
+                             command=lambda: self.show_screen(self.main_screen))
+        btn_back.pack(side="left")
+
+        title = tk.Label(header_frame, text="Get One More", font=("Arial", 24, "bold"), bg=self.bg_color)
+        title.pack(side="left", padx=30)
+
+        color_container = tk.Frame(self.get_one_more_screen, bg=self.bg_color)
+        color_container.pack(pady=15)
+
+        tk.Label(color_container, text="Lucky Color: ", font=("Arial", 14, "bold"), bg=self.bg_color).pack(side="left", padx=5)
+
+        self.color_lbl = tk.Label(color_container, text="UNKNOWN", font=("Arail", 16, "bold"), bg="#FFF", width=16, height=2, relief="sunken")
+        self.color_lbl.pack(side="left", padx=5)
+
+        input_frame = tk.Frame(self.get_one_more_screen, bg=self.bg_color)
+        input_frame.pack(pady=10)
+
+        tk.Label(input_frame, text="Starting roll amount:", font=("Arial", 12, "bold"), bg=self.bg_color).pack(side="left", padx=5)
+        self.entry_get_more_count = tk.Entry(input_frame, font=("Arial", 14), width=6, justify="center")
+        self.entry_get_more_count.pack(side="left", padx=5)
+        self.entry_get_more_count.insert(0, "1")
+        self.entry_get_more_count.bind('<Return>', lambda event: self.trigger_get_more_game())
+
+        list_frame = tk.Frame(self.get_one_more_screen)
+        list_frame.pack(padx=100, pady=10, fill="both", expand=True)
+
+        scrollbar = tk.Scrollbar(list_frame)
+        scrollbar.pack(side="right", fill="y")
+
+        cols = ("Item Name", "Quantity Awarded")
+        self.get_more_tree = ttk.Treeview(list_frame, columns=cols, show="headings", yscrollcommand=scrollbar.set, height=12)
+        self.get_more_tree.pack(side="left", fill="both", expand=True)
+        scrollbar.config(command=self.get_more_tree.yview)
+
+        for col in cols:
+            self.get_more_tree.heading(col, text=col)
+            self.get_more_tree.column(col, width=200, anchor="center")
+
+        btn_frame = tk.Frame(self.get_one_more_screen, bg=self.bg_color)
+        btn_frame.pack(pady=20)
+
+        btn_trigger_get_more = tk.Button(btn_frame, text="Get Gifts", font=("Arial", 14, "bold"), width=18, command=self.trigger_get_more_game)
+        btn_trigger_get_more.pack(side="left", padx=15)
+
+    def trigger_get_more_game(self):
+        try:
+            input_text = self.entry_get_more_count.get().strip()
+            if not input_text:
+                messagebox.showerror("Input Error", "Please enter starting amount")
+                return
+            amount = int(input_text)
+            if amount <= 0:
+                messagebox.showerror("Input Error", "Please enter a number greater than 0")
+                return
+        except ValueError:
+            messagebox.showerror("Data Type Error", "Please enter a valid whole number.")
+            return
+
+        for row in self.get_more_tree.get_children():
+            self.get_more_tree.delete(row)
+
+        results, lucky_color = getOneMore(amount)
+
+        if results == "Empty Database":
+            messagebox.showerror("Database Out of Stock", "No item in stock. Please restock items inside the inventory menu.")
+            return
+
+        self.color_lbl.config(text=str(lucky_color), fg="black")
+
+        for item_name, qty in results.items():
+            self.get_more_tree.insert("", "end", values=(item_name, qty))
 
     def build_roll_screen(self):
         header_frame = tk.Frame(self.roll_screen, bg=self.bg_color)
