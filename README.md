@@ -4,7 +4,7 @@ Lucky Scoops is a complete, windowed desktop app written in Python using Tkinter
 
 ## 🚀 Download the Application
 
-You do not need Python or PyCharm installed to run this app! 
+You do not need Python or PyCharm installed to run this app! **Please note: this is a Windows application only**
 
 1. Go to the [Lucky Scoops Releases Page](https://github.com/clarissa-dev-codes/LuckyScoop/releases/tag/v1.0) on GitHub.
 2. Download the **`LuckyScoops_v1.0.zip`** folder.
