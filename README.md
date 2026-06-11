@@ -9,7 +9,7 @@ You do not need Python or PyCharm installed to run this app! **Please note: this
 1. Go to the [Lucky Scoops Releases Page](https://github.com/clarissa-dev-codes/LuckyScoop/releases/tag/v1.0) on GitHub.
 2. Download the **`LuckyScoops_v1.0.zip`** folder.
 3. Extract the zip file on your computer.
-4. Double-click **`LuckyScoops.exe`** to launch the game!
+4. Double-click **`LuckyScoops.exe`** to launch the app!
 
 ---
 
